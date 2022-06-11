@@ -22,7 +22,7 @@
 #ifdef SV_TEST
    #include "fpga_pci_sv.h"
 #else
-   #include <fpga_pci.h>
+   #include "fpga_pci.h"
    #include <fpga_mgmt.h>
    #include <utils/lcd.h>
 #endif
