@@ -122,7 +122,7 @@ uint32_t byte_swap(uint32_t value) {
 #endif
 
     /* initialize the fpga_pci library so we could have access to FPGA PCIe from this applications */
-    rc = fpga_pci_init();
+    rc = fpga_mgmt_init();
     fail_on(rc, out, "Unable to initialize the fpga_pci library");
 
 #ifndef SV_TEST
