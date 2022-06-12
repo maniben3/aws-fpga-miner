@@ -23,11 +23,11 @@
    #include "fpga_pci_sv.h"
 #else
    #include "fpga_pci.h"
-   #include <fpga_mgmt.h>
-   #include <utils/lcd.h>
+   #include "fpga_mgmt.h"
+   #include "utils/lcd.h"
 #endif
 
-#include <utils/sh_dpi_tasks.h>
+#include "utils/sh_dpi_tasks.h"
 
 /* Constants determined by the CL */
 /* a set of register offsets; this CL has only one */
