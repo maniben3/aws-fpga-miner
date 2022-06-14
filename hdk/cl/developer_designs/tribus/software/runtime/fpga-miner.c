@@ -129,7 +129,7 @@ void nmsleep(unsigned int msecs)
 
 	d = ldiv(msecs, 1000);
 	tleft.tv_sec = d.quot;
-	tleft.tv_nsec = d.rem * 1000000;
+	tleft.tv_nsec = d.rem * 1000;
 	do {
 		twait.tv_sec = tleft.tv_sec;
 		twait.tv_nsec = tleft.tv_nsec;
@@ -1149,8 +1149,8 @@ static int share_result(int result, struct work *work, const char *reason)
 			suppl, s, flag);
 		break;
 	default:
-		sprintf(s, hashrate >= 1e6 ? "%.0f" : "%.2f", hashrate / 1000000.0);
-		applog(LOG_NOTICE, "accepted: %lu/%lu (%s), %s MH/s %s",
+		sprintf(s, hashrate >= 1e6 ? "%.0f" : "%.2f", hashrate / 1000.0);
+		applog(LOG_NOTICE, "accepted: %lu/%lu (%s), %s kH/s %s",
 			accepted_count, accepted_count + rejected_count,
 			suppl, s, flag);
 		break;
@@ -3424,7 +3424,7 @@ static bool initialize_aws_miner(void *thr, int slot_id)
 	fpga->type = FPGA_SERIAL;
 	fpga->device_fd = -1;
 	fpga->timeout = opt_scantime;
-	fpga->Hs = 0.000001;	// Default Hs(hashes/sec) to 1MH/s until share is found and hashrate can be calculated
+	fpga->Hs = 0.0001;	// Default Hs(hashes/sec) to 1MH/s until share is found and hashrate can be calculated
 			
 	fpga->slot_id = slot_id;
 	fpga->pf_id = FPGA_APP_PF;
@@ -3723,13 +3723,13 @@ static void *aws_miner_thread(void *userdata)
 			}
 
 			// Update Hashrate
-			fpga->Hs = ((double)(elapsed.tv_sec) + ((double)(elapsed.tv_usec))/((double)1000000)) / (double)nonce;
-			if(fpga->Hs < 0.000000001)
-				fpga->Hs = 0.000000001;
+			fpga->Hs = ((double)(elapsed.tv_sec) + ((double)(elapsed.tv_usec))/((double)1000)) / (double)nonce;
+			if(fpga->Hs < 0.0001)
+				fpga->Hs = 0.0001;
 
 			// Check If Hash < Work Target
 			if(fulltest(hash, work.target)) {
-				applog(LOG_DEBUG, "%s: Nonce Found - %08X (%5.1fMH/s)", fpga->short_name, nonce, (double)(1/(fpga->Hs * 1000000)));
+				applog(LOG_DEBUG, "%s: Nonce Found - %08X (%5.1fMH/s)", fpga->short_name, nonce, (double)(1/(fpga->Hs * 1000)));
 				fpga->submitted++;
 				submit_work(mythr, &work);
 
@@ -3740,12 +3740,12 @@ static void *aws_miner_thread(void *userdata)
 				}
 			}
 			else {
-				applog(LOG_DEBUG, "%s: Share above target - %08X (%5.1fMH/s)", fpga->short_name, nonce, (double)(1/(fpga->Hs * 1000000)));
+				applog(LOG_DEBUG, "%s: Share above target - %08X (%5.1fMH/s)", fpga->short_name, nonce, (double)(1/(fpga->Hs * 1000)));
 			}
 		}
 
 		// Estimate Number Of Hashes
-		hashes_done = ((double)(elapsed.tv_sec) + ((double)(elapsed.tv_usec))/((double)1000000)) / fpga->Hs;
+		hashes_done = ((double)(elapsed.tv_sec) + ((double)(elapsed.tv_usec))/((double)1000)) / fpga->Hs;
 		fpga->hashrate = hashes_done / (elapsed.tv_sec + elapsed.tv_usec * 1e-6);
 
 		pthread_mutex_lock(&stats_lock);
@@ -3758,7 +3758,7 @@ static void *aws_miner_thread(void *userdata)
 			display_summary = opt_fpga_summary;
 
 			applog(LOG_WARNING, "----------------- FPGA Summary for %s -------------------", fpga->device_path);
-			applog(LOG_WARNING, "Hash: %-4.2fMh/s  Submitted: %u  HW: %u", fpga->hashrate / 1000000.0, fpga->submitted, fpga->hw_errors);
+			applog(LOG_WARNING, "Hash: %-4.2fMh/s  Submitted: %u  HW: %u", fpga->hashrate / 1000.0, fpga->submitted, fpga->hw_errors);
 			applog(LOG_WARNING, "--------------------------------------------------------------------");
 		}
 
@@ -3845,7 +3845,7 @@ static void *key_monitor_thread(void *userdata)
 				}
 				
 				applog(LOG_WARNING, "Hash: %1.2f Mh/s  A: %u  R: %u (%1.2f%%)  HW: %u  BF: %d"
-					,(double)global_hashrate/1000000.0
+					,(double)global_hashrate/1000.0
 					,accepted_count
 					,rejected_count
 					,100.0 * accepted_count / (accepted_count + rejected_count)
